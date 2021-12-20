@@ -1,7 +1,7 @@
 apiVersion: eventing.knative.dev/v1
 kind: Trigger
 metadata:
-  name: morse-code-trigger
+  name: morse-code
 spec:
   broker: default
   filter:
