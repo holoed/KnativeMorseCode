@@ -11,7 +11,6 @@ import Web.Scotty         (ScottyM, scotty)
 import Web.Scotty.Trans ( body, text, post, middleware, setHeader )
 import Network.Wai.Middleware.RequestLogger ( logStdout )
 import Data.ByteString.Lazy.Char8 as Char8 ( unpack )
-import Data.Text as Text ( pack )
 import Data.Text.Lazy as Lazy ( pack )
 import qualified Data.UUID.V1 as U1
 
