@@ -1,0 +1,2 @@
+
+kubectl exec --stdin --tty pod/redis-master-85547b7b9-h9tgp -- /bin/bash
