@@ -1,0 +1,15 @@
+apiVersion: eventing.knative.dev/v1
+kind: Trigger
+metadata:
+  name: morse-code-trigger
+spec:
+  broker: default
+  filter:
+    attributes:
+      source: morse-code
+  subscriber:
+    ref:
+     apiVersion: v1
+     kind: Service
+     name: morse-code
+    uri: /echo
