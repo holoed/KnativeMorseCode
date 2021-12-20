@@ -33,5 +33,5 @@ route = do
          setHeader "Ce-Specversion" "1.0"
          setHeader "Ce-Source" "/morse-code"
          setHeader "Ce-Type" "morseCode"
-         json $ Text.pack ret
+         json $ Text.pack ("{ \"data\":" ++ ret ++ "}")
 
