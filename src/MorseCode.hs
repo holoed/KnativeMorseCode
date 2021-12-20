@@ -8,11 +8,11 @@ import Data.Maybe ( fromMaybe )
 import Control.Monad.IO.Class ( MonadIO(liftIO) )
 import System.Environment (lookupEnv)
 import Web.Scotty         (ScottyM, scotty)
-import Web.Scotty.Trans ( body, json, post, middleware, setHeader )
+import Web.Scotty.Trans ( body, text, post, middleware, setHeader )
 import Network.Wai.Middleware.RequestLogger ( logStdout )
 import Data.ByteString.Lazy.Char8 as Char8 ( unpack )
-import Data.Text as Text
-import Data.Text.Lazy as Lazy
+import Data.Text as Text ( pack )
+import Data.Text.Lazy as Lazy ( pack )
 import qualified Data.UUID.V1 as U1
 
 main :: IO ()
@@ -33,5 +33,5 @@ route = do
          setHeader "Ce-Specversion" "1.0"
          setHeader "Ce-Source" "/morse-code"
          setHeader "Ce-Type" "morseCode"
-         json $ Text.pack ("{ \"data\":" ++ ret ++ "}")
+         text $ Lazy.pack ("{ \"data\":" ++ ret ++ "}")
 
