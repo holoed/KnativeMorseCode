@@ -14,7 +14,7 @@ import Data.ByteString.Lazy.Char8 as Char8Lazy ( unpack )
 import Data.ByteString.Char8 as Char8 ( pack, unpack )
 import Data.Text.Lazy as Lazy ( pack )
 import qualified Data.UUID.V1 as U1
-import Database.Redis (Connection, ConnectInfo, connect, connectHost, defaultConnectInfo, runRedis, set, get, Reply (Integer))
+import Database.Redis (Connection, ConnectInfo, connect, connectHost, defaultConnectInfo, runRedis, set, get)
 
 main :: IO ()
 main = do
@@ -35,6 +35,7 @@ route redisCon = do
          let ret = Char8Lazy.unpack input
          _ <- liftIO $ runRedis redisCon $ do
                          v <- get (Char8.pack ret)
+                         liftIO $ print v
                          case v of
                           Right (Just x) -> set "hello" (Char8.pack (ret ++ Char8.unpack x))
                           Right Nothing -> set "hello" (Char8.pack ret)
