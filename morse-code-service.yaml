@@ -1,11 +1,10 @@
 apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
-  name: morse-code-service
+  name: morse-code
 spec:
   template:
     metadata:
     spec:
       containers:
-        - image: ghcr.io/holoed/morse-code:master
-          
+        - image: ghcr.io/holoed/knativemorsecode:main
