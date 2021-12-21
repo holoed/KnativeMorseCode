@@ -13,20 +13,27 @@ import Network.Wai.Middleware.RequestLogger ( logStdout )
 import Data.ByteString.Lazy.Char8 as Char8 ( unpack )
 import Data.Text.Lazy as Lazy ( pack )
 import qualified Data.UUID.V1 as U1
+import Database.Redis (Connection, ConnectInfo, connect, connectHost, defaultConnectInfo, runRedis, set)
 
 main :: IO ()
 main = do
   Prelude.putStrLn "Morse Code Service started"
   pStr <- fromMaybe "8080" <$> lookupEnv "PORT"
+  redisCon <- connect connectionInfo
   let p = read pStr :: Int
-  scotty p route
+  scotty p (route redisCon) 
 
-route :: ScottyM()
-route = do
+connectionInfo :: ConnectInfo
+connectionInfo = defaultConnectInfo { connectHost  = "redis-master" }
+
+route :: Connection -> ScottyM()
+route redisCon = do
     middleware logStdout
     post "/echo" $ do
          input <- body
          let ret = Char8.unpack input
+         _ <- liftIO $ runRedis redisCon $ do
+                         set "hello" "hello"
          (Just k) <- liftIO U1.nextUUID 
          setHeader "Ce-Id" (Lazy.pack $ show k)
          setHeader "Ce-Specversion" "1.0"
