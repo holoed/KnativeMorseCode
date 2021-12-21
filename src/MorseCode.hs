@@ -34,12 +34,12 @@ route redisCon = do
          input <- body
          let ret = Char8Lazy.unpack input
          _ <- liftIO $ runRedis redisCon $ do
-                         v <- get (Char8.pack ret)
+                         v <- get "hello"
                          liftIO $ print v
                          case v of
                           Right (Just x) -> set "hello" (Char8.pack (ret ++ Char8.unpack x))
                           Right Nothing -> set "hello" (Char8.pack ret)
-                          other -> set "hello" (Char8.pack (show other))
+                          Left reply -> set "hello" (Char8.pack (show reply))
          (Just k) <- liftIO U1.nextUUID
          setHeader "Ce-Id" (Lazy.pack $ show k)
          setHeader "Ce-Specversion" "1.0"
