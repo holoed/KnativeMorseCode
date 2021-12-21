@@ -10,11 +10,20 @@ import System.Environment (lookupEnv)
 import Web.Scotty         (ScottyM, scotty)
 import Web.Scotty.Trans ( body, text, post, middleware, setHeader )
 import Network.Wai.Middleware.RequestLogger ( logStdout )
-import Data.ByteString.Lazy.Char8 as Char8Lazy ( unpack )
-import Data.ByteString.Char8 as Char8 ( pack, unpack )
+import Data.ByteString.Lazy.Char8 as Char8Lazy ( pack, unpack, ByteString, toStrict )
+import Data.ByteString.Char8 as Char8 ( pack, unpack)
 import Data.Text.Lazy as Lazy ( pack )
 import qualified Data.UUID.V1 as U1
 import Database.Redis (Connection, ConnectInfo, connect, connectHost, defaultConnectInfo, runRedis, set, get)
+import Data.Aeson ( eitherDecode )
+import Data.Aeson.Types ( parseEither, (.:) )
+
+extractMessage :: ByteString -> Either String ByteString
+extractMessage input = do
+  object <- eitherDecode input
+  let parser = (\obj -> do
+        obj .: "message")
+  parseEither parser object
 
 main :: IO ()
 main = do
@@ -32,18 +41,18 @@ route redisCon = do
     middleware logStdout
     post "/echo" $ do
          input <- body
-         let ret = Char8Lazy.unpack input
+         let (Right y) = extractMessage input
          _ <- liftIO $ runRedis redisCon $ do
                          v <- get "hello"
                          liftIO $ print v
                          case v of
-                          Right (Just x) -> set "hello" (Char8.pack (ret ++ Char8.unpack x))
-                          Right Nothing -> set "hello" (Char8.pack ret)
+                          Right (Just x) -> set "hello" (x <> toStrict y)
+                          Right Nothing -> set "hello" (toStrict y)
                           Left reply -> set "hello" (Char8.pack (show reply))
          (Just k) <- liftIO U1.nextUUID
          setHeader "Ce-Id" (Lazy.pack $ show k)
          setHeader "Ce-Specversion" "1.0"
          setHeader "Ce-Source" "/morse-code"
          setHeader "Ce-Type" "morseCode"
-         text $ Lazy.pack ("{ \"data\":" ++ ret ++ "}")
+         text $ Lazy.pack "{ \"data\": { \"message\": \"I heard you!\" } }"
 
