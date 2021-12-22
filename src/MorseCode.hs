@@ -79,7 +79,7 @@ route redisCon = do
             (Just k) <- liftIO U1.nextUUID
             setHeader "Ce-Id" (Lazy.pack $ show k)
             setHeader "Ce-Specversion" "1.0"
-            setHeader "Ce-Source" "/morse-code"
-            setHeader "Ce-Type" "morseCode"
+            setHeader "Ce-Source" "morse-code-decoded"
+            setHeader "Ce-Type" "morse-Code"
             text $ Lazy.pack ("{ \"data\": { \"message\": " ++ [c] ++ " } }")
 
