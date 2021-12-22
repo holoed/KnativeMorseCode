@@ -8,9 +8,9 @@ import Data.Maybe ( fromMaybe )
 import Control.Monad.IO.Class ( MonadIO(liftIO) )
 import System.Environment (lookupEnv)
 import Web.Scotty         (ScottyM, scotty)
-import Web.Scotty.Trans ( body, text, post, middleware, setHeader, status )
+import Web.Scotty.Trans ( body, raw, post, middleware, setHeader, status )
 import Network.Wai.Middleware.RequestLogger ( logStdout )
-import Data.ByteString.Lazy.Char8 as Char8Lazy ( ByteString )
+import Data.ByteString.Lazy.Char8 as Char8Lazy ( ByteString, pack )
 import Data.ByteString.Char8 as Char8 ( pack, unpack )
 import Data.Text.Lazy as Lazy ( pack )
 import qualified Data.UUID.V1 as U1
@@ -83,6 +83,7 @@ route redisCon = do
             setHeader "Ce-Specversion" "1.0"
             setHeader "Ce-Source" "morse-code-decoded"
             setHeader "Ce-Type" "morse-Code"
+            setHeader "Content-Type" "application/json"
             liftIO $ print ("Decoded letter: " ++ [c])
-            text $ Lazy.pack ("{ \"data\": { \"message\": " ++ [c] ++ " } }")
+            raw $ Char8Lazy.pack ("{ \"data\": { \"message\": \"" ++ [c] ++ "\" } }")
 
