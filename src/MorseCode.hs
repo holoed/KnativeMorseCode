@@ -81,5 +81,6 @@ route redisCon = do
             setHeader "Ce-Specversion" "1.0"
             setHeader "Ce-Source" "morse-code-decoded"
             setHeader "Ce-Type" "morse-Code"
+            liftIO $ print ("Returning decoded letter: " ++ [c])
             text $ Lazy.pack ("{ \"data\": { \"message\": " ++ [c] ++ " } }")
 
