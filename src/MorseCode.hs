@@ -65,7 +65,8 @@ route redisCon = do
                          liftIO $ print v
                          if msg == " " then do
                           _ <- del [key]
-                          return $ decode (Char8.unpack msg)
+                          let Right (Just x) = v
+                          return $ decode (Char8.unpack x)
                          else do
                           _ <- case v of
                             Right (Just x) -> set key (x <> msg)
@@ -74,7 +75,7 @@ route redisCon = do
                           return Nothing
          case decoded of
            Nothing -> do
-            liftIO $ putStr "Status 200"
+            liftIO $ putStr "Updated state, thanks."
             status status200
            Just c -> do
             (Just k) <- liftIO U1.nextUUID
@@ -82,6 +83,6 @@ route redisCon = do
             setHeader "Ce-Specversion" "1.0"
             setHeader "Ce-Source" "morse-code-decoded"
             setHeader "Ce-Type" "morse-Code"
-            liftIO $ print ("Returning decoded letter: " ++ [c])
+            liftIO $ print ("Decoded letter: " ++ [c])
             text $ Lazy.pack ("{ \"data\": { \"message\": " ++ [c] ++ " } }")
 
