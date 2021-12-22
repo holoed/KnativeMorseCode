@@ -9,7 +9,6 @@ spec:
       source: morse-code
   subscriber:
     ref:
-     apiVersion: v1
-     kind: Service
-     name: morse-code
-    uri: /encode
+     apiVersion: flows.knative.dev/v1
+     kind: Sequence
+     name: morse-code-sequence
