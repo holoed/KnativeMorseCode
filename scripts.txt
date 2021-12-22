@@ -3,11 +3,11 @@
 kubectl exec --stdin --tty pod/redis-master-85547b7b9-h9tgp -- /bin/bash
 
 # send cloud event to echo service
-curl -v localhost:8080/echo \
+curl -v localhost:8080/encode \
   -X POST \
-  -H "Ce-Id: say-hello-goodbye" \
+  -H "Ce-Id: 42" \
   -H "Ce-Specversion: 1.0" \
-  -H "Ce-Type: greeting" \
-  -H "Ce-Source: sendoff" \
+  -H "Ce-Type: morse-code" \
+  -H "Ce-Source: morse-code" \
   -H "Content-Type: application/json" \
-  -d '{"msg":"Hello Knative! Goodbye Knative!"}'
+  -d '{"key": "42", "message":"."}'
