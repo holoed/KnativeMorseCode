@@ -73,8 +73,9 @@ route redisCon = do
                             Left reply -> set key (Char8.pack (show reply))
                           return Nothing
          case decoded of
-           Nothing -> 
-             status status200
+           Nothing -> do
+            liftIO $ putStr "Status 200"
+            status status200
            Just c -> do
             (Just k) <- liftIO U1.nextUUID
             setHeader "Ce-Id" (Lazy.pack $ show k)
