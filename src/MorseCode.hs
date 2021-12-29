@@ -14,11 +14,12 @@ import Data.ByteString.Lazy.Char8 as Char8Lazy ( pack )
 import Data.ByteString.Char8 as Char8 ( pack, unpack, ByteString )
 import Data.Text.Lazy as Lazy ( Text, pack )
 import qualified Data.UUID.V1 as U1
-import Database.Redis (Reply, Redis, Connection, ConnectInfo, Status, connect, connectHost, defaultConnectInfo, runRedis, set, get, del)
 import Network.HTTP.Types ( status200 )
 import Utils (mapTuple)
 import JsonUtils (extractMessage)
 import MorseCodeTable (decode)
+import RedisCmd (get', set', del', evalMock, RedisCmd)
+import Control.Monad.Free ( Free )
 
 replyEvent :: Char -> ActionT Text IO ()
 replyEvent c = do
@@ -35,46 +36,39 @@ main :: IO ()
 main = do
   Prelude.putStrLn "Morse Code Service started"
   pStr <- fromMaybe "8080" <$> lookupEnv "PORT"
-  redisCon <- connect connectionInfo
   let p = read pStr :: Int
-  scotty p (route redisCon)
+  scotty p route
 
-connectionInfo :: ConnectInfo
-connectionInfo = defaultConnectInfo { connectHost  = "redis-master" }
+updateState :: ByteString -> ByteString -> Maybe ByteString -> Free RedisCmd ()
+updateState key msg (Just x) = set' key (x <> msg)
+updateState key msg Nothing  = set' key msg
 
-updateState :: ByteString -> ByteString -> Either Reply (Maybe ByteString)-> Redis (Either Reply Status)
-updateState key msg (Right (Just x)) = set key (x <> msg)
-updateState key msg (Right Nothing)  = set key msg
-updateState key _   (Left reply)     = set key (Char8.pack (show reply))
+processSpace :: ByteString -> Maybe ByteString -> Free RedisCmd (Maybe Char)
+processSpace k v = do
+     _ <- del' [k]
+     return $ (decode . Char8.unpack) =<< v
 
-processSpace :: ByteString -> Either Reply (Maybe ByteString) -> Redis (Maybe Char)
-processSpace k v = do             
-     _ <- del [k]
-     let Right (Just x) = v
-     return $ decode (Char8.unpack x)
-
-processDashOrDot :: ByteString -> Either Reply (Maybe ByteString) -> ByteString -> Redis (Maybe a)
+processDashOrDot :: ByteString -> Maybe ByteString -> ByteString -> Free RedisCmd (Maybe a)
 processDashOrDot k v v' = do
      _ <- updateState k v' v
      return Nothing
 
-process :: ByteString -> ByteString -> Redis (Maybe Char)
+process :: ByteString -> ByteString -> Free RedisCmd (Maybe Char)
 process key msg = do
-       v <- get key
-       liftIO $ print v
+       v <- get' key
        if msg == " " then processSpace key v
        else processDashOrDot key v msg
 
-route :: Connection -> ScottyM()
-route redisCon = do
+route :: ScottyM()
+route = do
     middleware logStdout
     post "/encode" $ do
          input <- body
          let (Right (key, msg)) = mapTuple Char8.pack <$> extractMessage input
-         decoded <- liftIO $ runRedis redisCon $ process key msg
+         decoded <- liftIO $ evalMock $ process key msg
          case decoded of
            Nothing -> do
             liftIO $ putStr "Updated state, thanks."
             status status200
-           Just c -> replyEvent c 
+           Just c -> replyEvent c
 

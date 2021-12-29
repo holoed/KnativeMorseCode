@@ -46,7 +46,7 @@ test-suite tests
   ghc-options:         -Wall -fno-warn-orphans 
   type:                exitcode-stdio-1.0
   main-is:             Main.hs
-  other-modules:       Utils, JsonUtils, MorseCodeTable, MorseCode, MorseCodeTests
+  other-modules:       Utils, JsonUtils, MorseCodeTable, MorseCode, RedisCmd, MorseCodeTests
   hs-source-dirs:      tests, src
   build-depends:       base,
                        array,
