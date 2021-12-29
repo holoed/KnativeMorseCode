@@ -18,7 +18,7 @@ import Network.HTTP.Types ( status200 )
 import Utils (mapTuple)
 import JsonUtils (extractMessage)
 import MorseCodeTable (decode)
-import RedisCmd (get', set', del', evalMock, RedisCmd)
+import RedisCmd (get', set', del', evalRedis, RedisCmd)
 import Control.Monad.Free ( Free )
 
 replyEvent :: Char -> ActionT Text IO ()
@@ -65,7 +65,7 @@ route = do
     post "/encode" $ do
          input <- body
          let (Right (key, msg)) = mapTuple Char8.pack <$> extractMessage input
-         decoded <- liftIO $ evalMock $ process key msg
+         decoded <- liftIO $ evalRedis $ process key msg
          case decoded of
            Nothing -> do
             liftIO $ putStr "Updated state, thanks."
