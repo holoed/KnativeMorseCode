@@ -32,7 +32,6 @@ jobs:
 
     - name: Install dependencies
       run: |
-        sudo apt install nodejs -y
         cabal update
         cabal build --only-dependencies --enable-tests --enable-benchmarks
     - name: Build
